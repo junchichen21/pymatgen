@@ -1530,7 +1530,7 @@ class WulffShape_WZ:
             [WulffFacet]
         """
         all_hkl = []
-        special_hkl = [(0, 0, 0, 1), (0, 0, 0, -1), (1, 0, -1, 1), (-1, 0, 1, -1), (1, 1, -2, 1), (-1, -1, 2, -1)]
+        special_hkl = [(0, 0, 1), (0, 0, -1), (1, 0, 1), (-1, 0, -1), (1, 1, 1), (-1, -1, -1)]  # WZ special cases
         color_ind = self.color_ind
         planes = []
         recp = self.structure.lattice.reciprocal_lattice_crystallographic
@@ -1539,7 +1539,7 @@ class WulffShape_WZ:
         for idx, (hkl, energy) in enumerate(zip(self.hkl_list, self.e_surf_list, strict=True)):
             for op in recp_symm_ops:
                 miller = tuple(int(x) for x in op.operate(hkl))
-                if (hkl not in special_hkl or hkl[-1] == miller[-1]) and miller not in all_hkl:
+                if (hkl not in special_hkl or hkl[-1] == miller[-1]) and miller not in all_hkl:  # WZ special case
                     all_hkl.append(miller)
                     normal = recp.get_cartesian_coords(miller)
                     normal /= np.linalg.norm(normal)
