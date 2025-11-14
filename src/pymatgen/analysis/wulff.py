@@ -851,7 +851,7 @@ class WulffShape_ZB:
             [WulffFacet]
         """
         all_hkl = []
-        special_hkl = [(1, 1, 1), (-1, -1, -1), (2, 1, 1), (-2, -1, -1), (2, 2, 1), (-2, -2, -1)]
+        special_hkl = [(1, 1, 1), (-1, -1, -1), (2, 1, 1), (-2, -1, -1), (2, 2, 1), (-2, -2, -1)]  # ZB special case
         color_ind = self.color_ind
         planes = []
         recp = self.structure.lattice.reciprocal_lattice_crystallographic
@@ -860,8 +860,8 @@ class WulffShape_ZB:
         for idx, (hkl, energy) in enumerate(zip(self.hkl_list, self.e_surf_list, strict=True)):
             for op in recp_symm_ops:
                 miller = tuple(int(x) for x in op.operate(hkl))
-                if hkl not in special_hkl:
-                    if miller not in all_hkl:
+                if miller not in all_hkl:
+                    if hkl not in special_hkl:
                         all_hkl.append(miller)
                         normal = recp.get_cartesian_coords(miller)
                         normal /= np.linalg.norm(normal)
@@ -870,28 +870,28 @@ class WulffShape_ZB:
                         color_plane = color_ind[divmod(idx, len(color_ind))[1]]
                         planes.append(WulffFacet(normal, energy, normal_pt, dual_pt, color_plane, idx, hkl))
 
-                else:
-                    orig_abs = [abs(x) for x in hkl]
-                    rot_abs = [abs(x) for x in miller]
+                    else:
+                        orig_abs = [abs(x) for x in hkl]
+                        rot_abs = [abs(x) for x in miller]
 
-                    # Count negative numbers in each tuple
-                    orig_neg_count = sum(1 for x in hkl if x < 0)
-                    rot_neg_count = sum(1 for x in miller if x < 0)
+                        # Count negative numbers in each tuple
+                        orig_neg_count = sum(1 for x in hkl if x < 0)
+                        rot_neg_count = sum(1 for x in miller if x < 0)
 
-                    # Check if both have odd or both have even number of negatives
-                    same_parity = orig_neg_count % 2 == rot_neg_count % 2
+                        # Check if both have odd or both have even number of negatives
+                        same_parity = orig_neg_count % 2 == rot_neg_count % 2
 
-                    # Check if absolute values are the same (in any order)
-                    same_abs_values = sorted(orig_abs) == sorted(rot_abs)
+                        # Check if absolute values are the same (in any order)
+                        same_abs_values = sorted(orig_abs) == sorted(rot_abs)
 
-                    if same_abs_values and same_parity and miller not in all_hkl:
-                        all_hkl.append(miller)
-                        normal = recp.get_cartesian_coords(miller)
-                        normal /= np.linalg.norm(normal)
-                        normal_pt = [x * energy for x in normal]
-                        dual_pt = [x / energy for x in normal]
-                        color_plane = color_ind[divmod(idx, len(color_ind))[1]]
-                        planes.append(WulffFacet(normal, energy, normal_pt, dual_pt, color_plane, idx, hkl))
+                        if same_abs_values and same_parity:
+                            all_hkl.append(miller)
+                            normal = recp.get_cartesian_coords(miller)
+                            normal /= np.linalg.norm(normal)
+                            normal_pt = [x * energy for x in normal]
+                            dual_pt = [x / energy for x in normal]
+                            color_plane = color_ind[divmod(idx, len(color_ind))[1]]
+                            planes.append(WulffFacet(normal, energy, normal_pt, dual_pt, color_plane, idx, hkl))
 
         # sort by e_surf
         planes.sort(key=lambda x: x.e_surf)
